@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Método de Picard — Victor Moura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+/* ── Reset & tokens ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --ink:      #0e0f11;
+  --ink2:     #2a2d33;
+  --ink3:     #5a5e68;
+  --paper:    #f7f5f0;
+  --paper2:   #eeeae2;
+  --paper3:   #e2ddd4;
+  --gold:     #8b6914;
+  --gold2:    #b8921c;
+  --gold3:    #d4aa3a;
+  --gold-bg:  #fdf8ee;
+  --red:      #8b2020;
+  --cyan:     #1a6b5e;
+  --cyan-bg:  #eef6f4;
+  --border:   #d4cfc6;
+  --border2:  #c4bdb0;
+  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow2:  0 2px 8px rgba(0,0,0,.10), 0 12px 32px rgba(0,0,0,.08);
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── Noise texture overlay ──────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ── Nav ────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(247,245,240,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 1.1rem; font-weight: 400; color: var(--ink2);
+  letter-spacing: .04em;
+}
+.nav-links { display: flex; gap: 2px; list-style: none; }
+.nav-links button {
+  font-family: var(--mono); font-size: .68rem;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--ink3); background: none; border: none; cursor: pointer;
+  padding: 5px 12px; border-radius: 2px; transition: color .15s, background .15s;
+}
+.nav-links button:hover { color: var(--ink); background: var(--paper2); }
+.nav-links button.active { color: var(--gold); }
+
+/* ── Pages ──────────────────────────────────────── */
+.page { display: none; position: relative; z-index: 1; min-height: 100vh; padding-top: 52px; }
+.page.active { display: block; }
+
+/* ── Container ──────────────────────────────────── */
+.container { max-width: 900px; margin: 0 auto; padding: 0 40px; }
+.container-wide { max-width: 1060px; margin: 0 auto; padding: 0 40px; }
+
+/* ── HERO ───────────────────────────────────────── */
+#page-home { display: none; }
+#page-home.active {
+  display: grid; place-items: center;
+  min-height: 100vh; padding-top: 52px;
+}
+.hero { max-width: 820px; padding: 80px 40px 60px; animation: fadeUp .6s ease both; }
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(18px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--cyan);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+}
+.hero-eyebrow::before {
+  content: ''; display: block; width: 32px; height: 1px; background: var(--cyan);
+}
+.hero-title {
+  font-family: var(--serif); font-size: clamp(2.6rem, 5vw, 4.8rem);
+  font-weight: 300; line-height: 1.08; color: var(--ink); margin-bottom: 8px;
+}
+.hero-title em { font-style: italic; color: var(--gold2); }
+.hero-subtitle {
+  font-family: var(--serif); font-size: 1.15rem; font-style: italic;
+  color: var(--ink3); margin-bottom: 24px;
+}
+.hero-divider {
+  width: 60px; height: 1px; background: var(--border2); margin-bottom: 24px;
+}
+.hero-body {
+  font-size: .95rem; color: var(--ink3); max-width: 580px;
+  line-height: 1.85; margin-bottom: 40px;
+}
+.hero-body strong { color: var(--ink2); font-weight: 500; }
+.hero-meta {
+  display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 40px;
+}
+.hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.hero-meta-label {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink3);
+}
+.hero-meta-value { font-size: .88rem; color: var(--ink2); font-weight: 500; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+  text-transform: uppercase; padding: 10px 22px; border-radius: 2px;
+  cursor: pointer; transition: all .15s; border: 1px solid; text-decoration: none;
+  display: inline-block;
+}
+.btn-primary {
+  background: var(--ink); border-color: var(--ink); color: var(--paper);
+}
+.btn-primary:hover { background: var(--ink2); border-color: var(--ink2); }
+.btn-secondary {
+  background: transparent; border-color: var(--border2); color: var(--ink3);
+}
+.btn-secondary:hover { border-color: var(--ink3); color: var(--ink); }
+
+/* ── Section header ─────────────────────────────── */
+.sec-header {
+  padding: 56px 0 40px; border-bottom: 1px solid var(--border);
+  margin-bottom: 48px; display: flex; align-items: baseline; gap: 16px;
+}
+.sec-tag {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink3);
+}
+.sec-title {
+  font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 300; color: var(--ink);
+}
+
+/* ── Cards ──────────────────────────────────────── */
+.card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 3px; padding: 28px 32px; margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card:hover { box-shadow: var(--shadow2); }
+.card.gold { border-left: 3px solid var(--gold3); }
+.card.cyan  { border-left: 3px solid var(--cyan); }
+.card.red   { border-left: 3px solid var(--red); }
+.card-tag {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink3); margin-bottom: 10px;
+}
+.card-title {
+  font-family: var(--serif); font-size: 1.35rem; color: var(--ink);
+  margin-bottom: 10px;
+}
+.card-body { font-size: .9rem; color: var(--ink3); line-height: 1.8; }
+
+/* ── Grid ───────────────────────────────────────── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid2 .full { grid-column: 1/-1; }
+
+/* ── Formula box ─────────────────────────────────── */
+.formula-box {
+  background: var(--gold-bg); border: 1px solid #e0d0a0;
+  border-radius: 3px; padding: 18px 24px; margin: 14px 0;
+  font-family: var(--mono); font-size: .8rem; color: var(--gold);
+  line-height: 2; overflow-x: auto;
+}
+
+/* ── Code block ─────────────────────────────────── */
+.code-wrap { background: white; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin: 16px 0; box-shadow: var(--shadow); }
+.code-head {
+  background: var(--paper2); border-bottom: 1px solid var(--border);
+  padding: 8px 16px; display: flex; align-items: center; justify-content: space-between;
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #ffbd2e; }
+.code-dots span:nth-child(3) { background: #28ca41; }
+.code-lang {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .1em;
+  color: var(--cyan); text-transform: uppercase;
+}
+pre {
+  padding: 20px 22px; overflow-x: auto;
+  font-family: var(--mono); font-size: .78rem; line-height: 1.75;
+  color: var(--ink2);
+}
+.kw  { color: #7c3aed; font-weight: 500; }
+.fn  { color: #0369a1; }
+.str { color: #16a34a; }
+.cm  { color: #9ca3af; font-style: italic; }
+.num { color: #b45309; }
+.op  { color: #0891b2; }
+
+/* ── Error table ─────────────────────────────────── */
+.err-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: .78rem; }
+.err-table th {
+  background: var(--paper2); color: var(--ink2); font-weight: 500;
+  letter-spacing: .05em; padding: 9px 16px; text-align: right;
+  border-bottom: 2px solid var(--border2);
+}
+.err-table th:first-child { text-align: center; }
+.err-table td {
+  padding: 7px 16px; text-align: right;
+  border-bottom: 1px solid var(--border); color: var(--ink3);
+}
+.err-table td:first-child { text-align: center; color: var(--ink3); font-weight: 500; }
+.err-table tr:hover td { background: var(--paper2); }
+.good  { color: #16a34a; font-weight: 500; }
+.mid   { color: var(--gold2); }
+.bad   { color: var(--red); }
+.floor { color: var(--ink3); font-style: italic; }
+
+/* ── Tabs ────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  margin-bottom: 32px; overflow-x: auto;
+}
+.tab {
+  font-family: var(--mono); font-size: .65rem; letter-spacing: .09em;
+  text-transform: uppercase; padding: 10px 18px; cursor: pointer;
+  color: var(--ink3); border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all .15s; background: none; white-space: nowrap;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--gold2); border-bottom-color: var(--gold3); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp .25s ease; }
+
+/* ── Steps ───────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 22px; }
+.step { display: grid; grid-template-columns: 48px 1fr; gap: 18px; align-items: start; }
+.step-n {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 1.1rem; color: var(--gold2); flex-shrink: 0;
+}
+.step-content h4 { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); margin-bottom: 4px; }
+.step-content p  { font-size: .88rem; color: var(--ink3); line-height: 1.7; }
+
+/* ── Badge ───────────────────────────────────────── */
+.badge {
+  display: inline-block; font-family: var(--mono); font-size: .58rem;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 2px 9px; border-radius: 2px; border: 1px solid;
+  margin-left: 8px; vertical-align: middle;
+}
+.badge-done { border-color: #a7d7c5; color: var(--cyan); background: var(--cyan-bg); }
+
+/* ── Complexity tag ──────────────────────────────── */
+.complexity {
+  display: inline-block; font-family: var(--mono); font-size: .72rem;
+  padding: 3px 10px; background: var(--paper2); border: 1px solid var(--border);
+  border-radius: 2px; color: var(--ink3);
+}
+.complexity.fast { background: var(--cyan-bg); border-color: #a7d7c5; color: var(--cyan); }
+
+/* ── Tag chip ────────────────────────────────────── */
+.chip {
+  display: inline-block; font-family: var(--mono); font-size: .65rem;
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: 2px;
+  color: var(--ink3); background: white; margin: 3px;
+}
+
+/* ── Comparison table ────────────────────────────── */
+.cmp-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.cmp-table th {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink3);
+  padding: 8px 16px; border-bottom: 2px solid var(--border2);
+  text-align: left; background: var(--paper2);
+}
+.cmp-table td {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  color: var(--ink3); vertical-align: top;
+}
+.cmp-table td:first-child { color: var(--ink2); font-weight: 500; font-family: var(--mono); font-size: .8rem; }
+.cmp-table tr:hover td { background: var(--paper2); }
+
+/* ── Footer ──────────────────────────────────────── */
+footer {
+  position: relative; z-index: 1; border-top: 1px solid var(--border);
+  padding: 28px 40px; display: flex; justify-content: space-between; align-items: center;
+}
+footer p { font-family: var(--mono); font-size: .65rem; color: var(--ink3); letter-spacing: .04em; }
+footer a { color: var(--gold2); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Separator ───────────────────────────────────── */
+.sep { height: 1px; background: var(--border); margin: 32px 0; }
+
+/* ── Inline math highlight ───────────────────────── */
+.math-inline {
+  font-family: var(--mono); font-size: .8rem; color: var(--gold2);
+  background: var(--gold-bg); padding: 1px 6px; border-radius: 2px;
+}
+
+@media (max-width: 680px) {
+  nav { padding: 0 16px; }
+  .container, .container-wide, .hero { padding: 0 16px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .hero { padding: 60px 16px 40px; }
+  footer { flex-direction: column; gap: 8px; text-align: center; }
+  .hero-meta { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Victor Moura — Picard</div>
+  <ul class="nav-links">
+    <li><button onclick="nav('home')"        id="nb-home"        class="active">Início</button></li>
+    <li><button onclick="nav('teoria')"      id="nb-teoria"      >Teoria</button></li>
+    <li><button onclick="nav('experimento')" id="nb-experimento" >Experimento</button></li>
+    <li><button onclick="nav('resultados')"  id="nb-resultados"  >Resultados</button></li>
+    <li><button onclick="nav('codigo')"      id="nb-codigo"      >Código</button></li>
+    <li><button onclick="nav('relatorio')"   id="nb-relatorio"   >Relatório</button></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════ HOME ══════════════════════════════ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">Experimento Computacional · §&thinsp;2.6</div>
+    <h1 class="hero-title">
+      Método de <em>Picard</em><br>
+      Implementação Computacional
+    </h1>
+    <p class="hero-subtitle">Equações Diferenciais Ordinárias — Viana &amp; Espinar, IMPA 2025</p>
+    <div class="hero-divider"></div>
+    <p class="hero-body">
+      Implementação do experimento §&thinsp;2.6, cobrindo a iteração de Picard para aproximação de soluções de EDOs.
+      O projeto inclui análise de convergência numérica, comparativo entre integradores
+      do <strong>trapézio</strong> e do <strong>retângulo</strong>, otimização de complexidade
+      <strong>O(NL²) → O(NL)</strong> e extensão para sistemas de dimensão <em>d</em>&thinsp;=&thinsp;2.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Autor</span>
+        <span class="hero-meta-value">Victor Gabriel Santos de Moura</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Curso</span>
+        <span class="hero-meta-value">Bacharelado em Matemática — IM/UFAL</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Ano</span>
+        <span class="hero-meta-value">2026</span>
+      </div>
+    </div>
+    <div class="hero-btns">
+      <button class="btn btn-primary"    onclick="nav('teoria')">Ver teoria</button>
+      <button class="btn btn-secondary"  onclick="nav('resultados')">Resultados</button>
+      <a href="https://github.com/VictorMoura22/experimento-picard"
+         class="btn btn-secondary" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ TEORIA ════════════════════════════ -->
+<div id="page-teoria" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">§&thinsp;2.6</span>
+    <h2 class="sec-title">Fundamentação Teórica</h2>
+  </div>
+
+  <div class="card gold">
+    <div class="card-tag">Teorema de Picard–Lindelöf</div>
+    <div class="card-title">Existência, unicidade e convergência</div>
+    <p class="card-body">
+      Dado o PVI \(x' = F(t,x)\), \(x(t_0)=x_0\), com \(F\) contínua e Lipschitziana em \(x\),
+      fixe \(\delta > 0\) tal que \(B_\delta(t_0)\times B_\delta(x_0)\subset U\). Define-se:
+    </p>
+    <div class="formula-box">
+      M(δ) = sup{ ‖F(t,x)‖ : |t−t₀| ≤ δ, ‖x−x₀‖ ≤ δ }<br>
+      C(δ) = constante de Lipschitz de F em x sobre essa região<br>
+      ε(δ) = min{ δ, δ/M(δ) }  —  raio garantido de solução
+    </div>
+    <p class="card-body">
+      Para todo \(\varepsilon \leq \varepsilon(\delta)\) existe solução única
+      \(x:(t_0-\varepsilon, t_0+\varepsilon)\to\mathbb{R}^d\), e os iterados de Picard
+      convergem uniformemente (Teorema 2.12 de [1]).
+    </p>
+  </div>
+
+  <div class="grid2">
+    <div class="card cyan">
+      <div class="card-tag">Cota do erro — Corolário 2.14</div>
+      <div class="card-title">Velocidade de convergência</div>
+      <div class="formula-box" style="font-size:.72rem">
+        ‖γₙ − x‖∞ ≤ M(δ) · (C(δ)·ε)ⁿ / n!
+      </div>
+      <p class="card-body">
+        O fatorial no denominador garante convergência para qualquer valor de \(C(\delta)\varepsilon\).
+        Se \(C\varepsilon \leq 1\): a cota decresce desde o primeiro iterado.
+        Se \(C\varepsilon > 1\): cresce até \(n \approx C\varepsilon\) e só então decai.
+      </p>
+    </div>
+
+    <div class="card red">
+      <div class="card-tag">Para F(t,x) = x² — parâmetros ótimos</div>
+      <div class="card-title">Maximização de ε(δ)</div>
+      <div class="formula-box" style="font-size:.72rem">
+        M(δ) = (1+δ)²<br>
+        C(δ) = 2(1+δ)<br>
+        ε(δ) = δ/(1+δ)²<br>
+        δ* = 1 → ε* = 1/4,  M* = C* = 4
+      </div>
+      <p class="card-body">
+        Com \(C^*\varepsilon^* = 1\), a cota reduz-se a \(4/n!\),
+        garantindo \(\|\gamma_8 - x\|_\infty \lesssim 10^{-4}\).
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-tag">Sistema 2D — resultado central</div>
+    <div class="card-title">C(δ) = 1 constante para x″ = −x + 2 sen t</div>
+    <p class="card-body">
+      Reescrevendo como sistema \((x_1,x_2)' = (x_2,\,-x_1+2\text{sen}\,t)\),
+      a parte linear tem matriz
+      \(A = \bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\),
+      que é uma <em>rotação</em> — isometria com \(\|A\|_2 = 1\). Logo \(C(\delta)=1\)
+      para todo \(\delta\), tornando a cota \(M(\delta)\,\varepsilon^n/n!\) sem o fator
+      \((C\varepsilon)^n\) que penalizava o caso escalar. A solução é inteira em
+      \(\mathbb{R}\), sem nenhuma singularidade real.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-tag">Erro total — dois termos competidores</div>
+    <div class="formula-box" style="font-size:.72rem">
+      ‖γₙʰ − x‖∞  ≤  M(δ)·(C(δ)·ε)ⁿ/n!   +   O(ε²·L⁻ᵖ)
+                       ↑ erro de convergência     ↑ erro de quadratura
+      p = 2  (trapézio)     p = 1  (retângulo)
+    </div>
+    <p class="card-body">
+      Aumentar \(N\) reduz o primeiro exponencialmente via o fatorial.
+      Aumentar \(L\) reduz o segundo como \(L^{-p}\).
+      O retângulo atinge um <em>piso de erro irredutível</em> \(\propto \varepsilon^2/L\)
+      que não desaparece aumentando \(N\) — apenas aumentando \(L\).
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════ EXPERIMENTO ═══════════════════════ -->
+<div id="page-experimento" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">Objetivos</span>
+    <h2 class="sec-title">Experimento</h2>
+  </div>
+
+  <div class="card gold full" style="margin-bottom:24px">
+    <div class="card-tag">Viana &amp; Espinar §&thinsp;2.6 — cinco objetivos progressivos</div>
+    <div class="steps" style="margin-top:16px">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-content">
+          <h4>Implementação básica <span class="badge badge-done">concluído</span></h4>
+          <p>Operador de Picard como recorrência matricial em \([0,\varepsilon^*]\).
+          Primeira validação contra a solução exata \(x(t)=1/(1-t)\).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-content">
+          <h4>Trapézio vs. Retângulo <span class="badge badge-done">concluído</span></h4>
+          <p>Comparação dos dois integradores em \([0,\,0{,}5]\).
+          Conexão entre iterados de Picard e somas parciais de \(\sum t^k\).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-content">
+          <h4>Domínio simétrico \((-\varepsilon,\varepsilon)\) <span class="badge badge-done">concluído</span></h4>
+          <p>Integração bidirecional a partir de \(t_0=0\). Piso irredutível do
+          retângulo no extremo esquerdo identificado e explicado.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">4</div>
+        <div class="step-content">
+          <h4>Domínios maiores — análise teórica + otimização <span class="badge badge-done">concluído</span></h4>
+          <p>Cálculo de \(M(\delta)\), \(C(\delta)\), \(\delta^*\), \(N_{\max}(\tau)\).
+          Redução de complexidade \(\mathcal{O}(NL^2)\to\mathcal{O}(NL)\) via
+          acumulação incremental (fator \(\approx 2500\times\) para os parâmetros usados).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">5</div>
+        <div class="step-content">
+          <h4>Sistema 2D — \(d=2\) <span class="badge badge-done">concluído</span></h4>
+          <p>Tensor \((N+1)\times L\times 2\). \(C(\delta)=1\) exato via norma espectral.
+          Solução inteira. Validado contra <code style="color:var(--cyan);font-family:var(--mono);font-size:.8rem">scipy.integrate.solve_ivp</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs por objetivo -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'obj1')">Obj. 1</button>
+    <button class="tab"        onclick="switchTab(this,'obj2')">Obj. 2</button>
+    <button class="tab"        onclick="switchTab(this,'obj3')">Obj. 3</button>
+    <button class="tab"        onclick="switchTab(this,'obj4')">Obj. 4</button>
+    <button class="tab"        onclick="switchTab(this,'obj5')">Obj. 5</button>
+  </div>
+
+  <div id="tab-obj1" class="tab-panel active">
+    <div class="card gold">
+      <div class="card-tag">EDO1.py · ε = 0,25 · L = 500 · N = 8</div>
+      <div class="card-title">Operador de Picard — implementação inicial</div>
+      <p class="card-body">Com \(C(\delta^*)\varepsilon^* = 1\), a cota \(\|\gamma_n-x\|_\infty\leq 4/n!\)
+      decresce monotonamente desde o primeiro iterado.
+      Para \(n=8\): \(4/8!\approx 9{,}9\times10^{-5}\).</p>
+    </div>
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">EDO1.py</span>
+      </div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+eps <span class="op">=</span> <span class="num">0.25</span>;  L <span class="op">=</span> <span class="num">500</span>;  N <span class="op">=</span> <span class="num">8</span>;  x0 <span class="op">=</span> <span class="num">1.0</span>
+t <span class="op">=</span> np.<span class="fn">linspace</span>(<span class="num">0</span>, eps, L)
+
+<span class="kw">def</span> <span class="fn">F</span>(t, x): <span class="kw">return</span> x<span class="op">**</span><span class="num">2</span>
+
+y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">+</span><span class="num">1</span>, L));  y[<span class="num">0</span>] <span class="op">=</span> x0
+
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
+        intg <span class="op">=</span> <span class="fn">F</span>(t[:k<span class="op">+</span><span class="num">1</span>], y[n, :k<span class="op">+</span><span class="num">1</span>])
+        y[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">trapezoid</span>(intg, t[:k<span class="op">+</span><span class="num">1</span>])</pre>
+    </div>
+  </div>
+
+  <div id="tab-obj2" class="tab-panel">
+    <div class="card cyan">
+      <div class="card-tag">EDO2.py · ε = 0,5 · L = 2000 · N = 14</div>
+      <div class="card-title">Convergência além de ε* — série geométrica</div>
+      <p class="card-body">
+        Para \(F=x^2\), os iterados coincidem com as somas parciais de
+        \(x(t)=\sum_{k=0}^\infty t^k\), convergindo para todo \(|t|&lt;1\)
+        mesmo que o Teorema 2.12 só garanta \(\varepsilon\leq 0{,}25\).
+        O trapézio atinge piso numérico \(\sim 10^{-7}\); o retângulo estabiliza em \(\sim 7\times10^{-4}\).
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-obj3" class="tab-panel">
+    <div class="card red">
+      <div class="card-tag">EDO3.py · ε = 0,85 · L = 10001 (ímpar) · N = 14</div>
+      <div class="card-title">Integração bidirecional — piso irredutível do retângulo</div>
+      <p class="card-body">
+        \(L\) ímpar garante \(t_{i_0}=0\) exatamente (\(i_0=\lfloor L/2\rfloor\)).
+        O erro global do retângulo em \([t,0]\) é \(\mathcal{O}(h)\cdot|t|=\mathcal{O}(\varepsilon^2/L)\),
+        constante em \(N\). O trapézio converge como \(\mathcal{O}(\varepsilon^3/L^2)\) —
+        duas ordens a mais em \(L\).
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-obj4" class="tab-panel">
+    <div class="card gold">
+      <div class="card-tag">EDO4.py · ε = 0,99 · L = 20001 · N = 30</div>
+      <div class="card-title">Acumulação incremental — O(NL²) → O(NL)</div>
+      <p class="card-body">
+        A recorrência \(I_k^+=I_{k-1}^++(f_{k-1}+f_k)h/2\) reduz o custo
+        de \(\approx 3\times10^9\) para \(\approx 1{,}2\times10^6\) operações —
+        fator \(2500\times\). O parâmetro ótimo \(\delta^*=1\) é o único máximo de
+        \(\varepsilon(\delta)=\delta/(1+\delta)^2\).
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-obj5" class="tab-panel">
+    <div class="card red">
+      <div class="card-tag">EDO5.py · ε = 0,947 · L = 20001 · N = 14 · d = 2</div>
+      <div class="card-title">Tensor (N+1)×L×2 — C(δ) = 1 exato</div>
+      <p class="card-body">
+        A matriz \(A=\bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\)
+        é isometria (\(\|A\|_2=1\)), logo \(C(\delta)=1\) para todo \(\delta\).
+        Com \(C\varepsilon=1\), a cota decai como \(M(\delta^*)/n!\) desde o primeiro
+        iterado. Solução inteira: sem limitação de domínio análoga ao teto \(|t|&lt;1\).
+      </p>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════ RESULTADOS ════════════════════════ -->
+<div id="page-resultados" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">Dados numéricos</span>
+    <h2 class="sec-title">Resultados</h2>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'r1')">Obj. 1–2</button>
+    <button class="tab"        onclick="switchTab(this,'r2')">Obj. 3</button>
+    <button class="tab"        onclick="switchTab(this,'r3')">Obj. 4</button>
+    <button class="tab"        onclick="switchTab(this,'r4')">Obj. 5</button>
+  </div>
+
+  <!-- Obj 1-2 -->
+  <div id="tab-r1" class="tab-panel active">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-tag">Obj. 1 · ε = 0,25 · L = 500 · N = 8</div>
+        <div class="card-title">Erro máximo ‖γₙ − x‖∞ — Trapézio</div>
+        <table class="err-table" style="margin-top:12px">
+          <thead><tr><th>n</th><th>Trapézio</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td class="bad">3.33e−01</td></tr>
+            <tr><td>1</td><td class="bad">8.33e−02</td></tr>
+            <tr><td>2</td><td class="mid">1.56e−02</td></tr>
+            <tr><td>3</td><td class="mid">2.25e−03</td></tr>
+            <tr><td>5</td><td class="mid">2.49e−05</td></tr>
+            <tr><td>7</td><td class="good">7.39e−08</td></tr>
+            <tr><td>8</td><td class="good">6.49e−08</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-tag">Obj. 2 · ε = 0,5 · L = 2000 · N = 14</div>
+        <div class="card-title">Erro máximo ‖γₙ − x‖∞</div>
+        <table class="err-table" style="margin-top:12px">
+          <thead><tr><th>n</th><th>Trapézio</th><th>Retângulo</th></tr></thead>
+          <tbody>
+            <tr><td>0</td>  <td class="bad">1.00e+00</td><td class="bad">1.00e+00</td></tr>
+            <tr><td>2</td>  <td class="bad">2.08e−01</td><td class="bad">2.08e−01</td></tr>
+            <tr><td>5</td>  <td class="mid">4.67e−03</td><td class="mid">5.32e−03</td></tr>
+            <tr><td>8</td>  <td class="mid">2.53e−05</td><td class="mid">7.18e−04</td></tr>
+            <tr><td>11</td> <td class="good">8.11e−08</td><td class="floor">6.93e−04</td></tr>
+            <tr><td>14</td> <td class="good">1.25e−07</td><td class="floor">6.93e−04 ⌊</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">⌊ piso irredutível do retângulo</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Obj 3 -->
+  <div id="tab-r2" class="tab-panel">
+    <div class="card">
+      <div class="card-tag">Obj. 3 · (−0,85, 0,85) · L = 10001 · N = 14</div>
+      <div class="card-title">Erro máximo ‖γₙ − x‖∞ — domínio simétrico</div>
+      <table class="err-table" style="margin-top:12px">
+        <thead><tr><th>n</th><th>Trapézio</th><th>Retângulo</th></tr></thead>
+        <tbody>
+          <tr><td>0</td>  <td class="bad">5.67e+00</td><td class="bad">5.67e+00</td></tr>
+          <tr><td>3</td>  <td class="bad">2.94e+00</td><td class="bad">2.94e+00</td></tr>
+          <tr><td>6</td>  <td class="mid">7.32e−01</td><td class="mid">7.39e−01</td></tr>
+          <tr><td>9</td>  <td class="mid">6.67e−02</td><td class="mid">7.97e−02</td></tr>
+          <tr><td>12</td> <td class="good">2.36e−03</td><td class="floor">1.66e−02</td></tr>
+          <tr><td>14</td> <td class="good">1.65e−04</td><td class="floor">1.44e−02 ⌊</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">
+        ⌊ piso do retângulo proporcional a ε²/L — não reduzível aumentando N
+      </p>
+    </div>
+  </div>
+
+  <!-- Obj 4 -->
+  <div id="tab-r3" class="tab-panel">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-tag">Parâmetros ótimos — F = x²</div>
+        <table class="err-table" style="margin-top:8px;font-size:.72rem">
+          <thead><tr><th>δ</th><th>M(δ)</th><th>C(δ)</th><th>ε(δ)</th><th>N_max(10⁻⁶)</th></tr></thead>
+          <tbody>
+            <tr><td>0,25</td><td>1,5625</td><td>2,5000</td><td>0,1600</td><td>7</td></tr>
+            <tr><td>0,50</td><td>2,2500</td><td>3,0000</td><td>0,2222</td><td>9</td></tr>
+            <tr style="background:var(--gold-bg)"><td><strong>1,00*</strong></td><td>4,0000</td><td>4,0000</td><td><strong>0,2500</strong></td><td>11</td></tr>
+            <tr><td>1,50</td><td>6,2500</td><td>5,0000</td><td>0,2400</td><td>12</td></tr>
+            <tr><td>2,00</td><td>9,0000</td><td>6,0000</td><td>0,2222</td><td>12</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:6px">* δ* = 1 maximiza ε(δ)</p>
+      </div>
+      <div class="card">
+        <div class="card-tag">N_max(τ) com δ* = 1, ε* = 0,25</div>
+        <table class="err-table" style="margin-top:8px">
+          <thead><tr><th>τ</th><th>N_max</th></tr></thead>
+          <tbody>
+            <tr><td>10⁻²</td><td class="good">6</td></tr>
+            <tr><td>10⁻⁴</td><td class="good">8</td></tr>
+            <tr><td>10⁻⁶</td><td class="mid">11</td></tr>
+            <tr><td>10⁻⁸</td><td class="mid">12</td></tr>
+            <tr><td>10⁻¹⁰</td><td class="mid">14</td></tr>
+            <tr><td>10⁻¹²</td><td class="bad">17</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Obj 5 -->
+  <div id="tab-r4" class="tab-panel">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-tag">Obj. 5 · ε = 0,947 · L = 20001 · N = 14</div>
+        <div class="card-title">Erro máximo ‖γₙ − x‖∞ — Trapézio</div>
+        <table class="err-table" style="margin-top:12px">
+          <thead><tr><th>n</th><th>Trapézio</th></tr></thead>
+          <tbody>
+            <tr><td>0</td>  <td class="bad">1.58e+00</td></tr>
+            <tr><td>2</td>  <td class="bad">1.98e−01</td></tr>
+            <tr><td>4</td>  <td class="mid">8.14e−03</td></tr>
+            <tr><td>6</td>  <td class="mid">1.65e−04</td></tr>
+            <tr><td>8</td>  <td class="good">1.99e−06</td></tr>
+            <tr><td>10</td> <td class="good">1.49e−08</td></tr>
+            <tr><td>12</td> <td class="good">9.98e−10</td></tr>
+            <tr><td>14</td> <td class="good">9.09e−10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-tag">N_max(τ) comparativo</div>
+        <table class="err-table" style="margin-top:8px;font-size:.75rem">
+          <thead><tr><th>τ</th><th>EDO4 (F=x²)</th><th>EDO5 (2D)</th></tr></thead>
+          <tbody>
+            <tr><td>10⁻²</td><td>6</td><td>6</td></tr>
+            <tr><td>10⁻⁴</td><td>8</td><td>8</td></tr>
+            <tr><td>10⁻⁶</td><td>11</td><td class="good">10</td></tr>
+            <tr><td>10⁻⁸</td><td>12</td><td>12</td></tr>
+            <tr><td>10⁻¹⁰</td><td>14</td><td>14</td></tr>
+            <tr><td>10⁻¹²</td><td>16</td><td>16</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">
+          C(δ)=1 torna o sistema 2D intrinsecamente mais favorável.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════ CÓDIGO ════════════════════════════ -->
+<div id="page-codigo" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">Implementação</span>
+    <h2 class="sec-title">Código</h2>
+  </div>
+
+  <div class="card full" style="margin-bottom:16px">
+    <div class="card-tag">Evolução dos algoritmos</div>
+    <table class="cmp-table" style="margin-top:12px">
+      <thead>
+        <tr>
+          <th>Arquivo</th><th>Domínio</th><th>d</th>
+          <th>Complexidade</th><th>Análise teórica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>EDO1.py</td>
+          <td>[0, 0,25]</td><td>1</td>
+          <td><span class="complexity">O(NL²)</span></td>
+          <td style="color:var(--ink3)">—</td>
+        </tr>
+        <tr>
+          <td>EDO2.py</td>
+          <td>[0, 0,5]</td><td>1</td>
+          <td><span class="complexity">O(NL²)</span></td>
+          <td style="color:var(--ink3)">—</td>
+        </tr>
+        <tr>
+          <td>EDO3.py</td>
+          <td>(−0,85, 0,85)</td><td>1</td>
+          <td><span class="complexity">O(NL²)</span></td>
+          <td style="color:var(--ink3)">—</td>
+        </tr>
+        <tr>
+          <td>EDO4.py</td>
+          <td>(−0,99, 0,99)</td><td>1</td>
+          <td><span class="complexity fast">O(NL)</span></td>
+          <td style="color:var(--cyan)">M(δ), C(δ), N_max(τ)</td>
+        </tr>
+        <tr>
+          <td>EDO5.py</td>
+          <td>(−0,947, 0,947)</td><td>2</td>
+          <td><span class="complexity fast">O(NL)</span></td>
+          <td style="color:var(--cyan)">C(δ)=1, M(δ), sistema 2D</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-tag">Otimização — fator 2500×</div>
+      <div class="card-title">O(NL²) → O(NL)</div>
+      <p class="card-body" style="margin-bottom:12px">
+        A versão direta recalcula \(\int_{t_{i_0}}^{t_k}\) integralmente a cada ponto:
+        \(\sum_{k=i_0}^{L-1}(k-i_0)=\mathcal{O}(L^2)\) por iterado.<br><br>
+        A acumulação incremental usa:
+      </p>
+      <div class="formula-box" style="font-size:.72rem">
+        I⁺ₖ = I⁺ₖ₋₁ + (fₖ₋₁ + fₖ)/2 · h   [trapézio]<br>
+        I⁻ₖ = I⁻ₖ₊₁ + (fₖ + fₖ₊₁)/2 · h   [negativo]
+      </div>
+      <p class="card-body">
+        Cada passo custa Θ(1) → custo total O(NL).
+        Para N=30, L=20001: ≈3×10⁹ → ≈1,2×10⁶ operações.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-tag">Extensão para d = 2</div>
+      <div class="card-title">Tensor (N+1) × L × 2</div>
+      <p class="card-body" style="margin-bottom:12px">
+        A única modificação estrutural: todos os arrays ganham uma dimensão extra.
+        O NumPy aplica a recorrência elemento a elemento sem alteração de código.
+      </p>
+      <table class="err-table" style="font-size:.7rem">
+        <thead><tr><th>Objeto</th><th>EDO4 (d=1)</th><th>EDO5 (d=2)</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left">y_tp</td><td>(N+1, L)</td><td>(N+1, L, 2)</td></tr>
+          <tr><td style="text-align:left">I_tp_pos</td><td>(L,)</td><td>(L, 2)</td></tr>
+          <tr><td style="text-align:left">x0</td><td>1.0</td><td>array([1.,0.])</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:4px">
+    <div class="card-tag">Bibliotecas</div>
+    <div style="margin-top:10px">
+      <span class="chip">numpy</span>
+      <span class="chip">matplotlib</span>
+      <span class="chip">matplotlib.cm</span>
+      <span class="chip" style="color:var(--ink3);border-style:dashed">scipy.integrate — validação</span>
+      <span class="chip" style="color:var(--ink3);border-style:dashed">time</span>
+    </div>
+    <p class="card-body" style="margin-top:12px">
+      Apenas bibliotecas padrão do ecossistema científico Python.
+      SciPy usado exclusivamente para validação independente via
+      <code style="font-family:var(--mono);font-size:.8rem;color:var(--cyan)">solve_ivp</code>.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:4px">
+    <div class="card-tag">Repositório</div>
+    <p class="card-body" style="margin-bottom:14px">Código-fonte completo disponível no GitHub.</p>
+    <a href="https://github.com/VictorMoura22/experimento-picard"
+       class="btn btn-primary" target="_blank" style="font-size:.65rem">
+      github.com/VictorMoura22/experimento-picard ↗
+    </a>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════ RELATÓRIO ═════════════════════════ -->
+<div id="page-relatorio" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">Documento</span>
+    <h2 class="sec-title">Relatório</h2>
+  </div>
+
+  <div class="card gold">
+    <div class="card-tag">Relatório técnico completo — 30 páginas</div>
+    <div class="card-title">Método de Picard: Implementação Computacional</div>
+    <p class="card-body" style="margin-bottom:20px">
+      Documentação completa do experimento §&thinsp;2.6 de Viana &amp; Espinar,
+      incluindo fundamentação teórica com demonstrações, decisões de implementação,
+      análise de complexidade algorítmica, tabelas de erro e discussão comparativa
+      entre integradores e EDOs estudadas.
+    </p>
+    <a href="https://github.com/VictorMoura22/experimento-picard"
+       class="btn btn-primary" target="_blank">
+      Acessar no GitHub ↗
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-tag">Estrutura do documento</div>
+    <div class="steps" style="margin-top:12px">
+      <div class="step">
+        <div class="step-n" style="width:34px;height:34px;font-size:.85rem">1</div>
+        <div class="step-content">
+          <h4 style="font-size:.95rem">Fundamentação Teórica</h4>
+          <p style="font-size:.83rem">Teorema P-L, operador de Picard, cota do erro, discretização e erro de quadratura.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n" style="width:34px;height:34px;font-size:.85rem">2</div>
+        <div class="step-content">
+          <h4 style="font-size:.95rem">Objetivos 1–3</h4>
+          <p style="font-size:.83rem">Implementação básica, comparação trapézio/retângulo, domínio simétrico e piso irredutível.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n" style="width:34px;height:34px;font-size:.85rem">3</div>
+        <div class="step-content">
+          <h4 style="font-size:.95rem">Objetivo 4 — Análise teórica e otimização</h4>
+          <p style="font-size:.83rem">M(δ), C(δ), δ*, N_max(τ), acumulação incremental O(NL²) → O(NL).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n" style="width:34px;height:34px;font-size:.85rem">4</div>
+        <div class="step-content">
+          <h4 style="font-size:.95rem">Objetivo 5 — Sistema 2D</h4>
+          <p style="font-size:.83rem">C(δ)=1 via norma espectral, tensor 3D, validação SciPy, comparativo global.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n" style="width:34px;height:34px;font-size:.85rem">5</div>
+        <div class="step-content">
+          <h4 style="font-size:.95rem">Comparação e Conclusões</h4>
+          <p style="font-size:.83rem">Evolução dos algoritmos, papel de C(δ) na estruturação do método, síntese dos resultados.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:4px">
+    <div class="card-tag">Referência</div>
+    <p class="card-body">
+      M. Viana e J. Espinar, <em>Equações Diferenciais Ordinárias</em>,
+      IMPA, Rio de Janeiro, 2025.
+    </p>
+  </div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Victor Gabriel Santos de Moura · Matemática IM/UFAL · Maceió, 2026</p>
+  <p>
+    <a href="https://github.com/VictorMoura22/experimento-picard" target="_blank">GitHub ↗</a>
+    &ensp;·&ensp;
+    <a href="mailto:victor.moura@ctec.ufal.br">victor.moura@ctec.ufal.br</a>
+  </p>
+</footer>
+
+<script>
+function nav(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const nb = document.getElementById('nb-' + id);
+  if (nb) nb.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchTab(btn, id) {
+  const page = btn.closest('.page');
+  page.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  page.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('tab-' + id);
+  if (el) el.classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
