@@ -44,7 +44,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Noise texture overlay ──────────────────────── */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -136,7 +135,7 @@ nav {
   font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
   text-transform: uppercase; padding: 10px 22px; border-radius: 2px;
   cursor: pointer; transition: all .15s; border: 1px solid; text-decoration: none;
-  display: inline-block;
+  display: inline-flex; align-items: center; gap: 7px;
 }
 .btn-primary {
   background: var(--ink); border-color: var(--ink); color: var(--paper);
@@ -146,6 +145,27 @@ nav {
   background: transparent; border-color: var(--border2); color: var(--ink3);
 }
 .btn-secondary:hover { border-color: var(--ink3); color: var(--ink); }
+.btn-download {
+  background: var(--cyan-bg); border-color: #a7d7c5; color: var(--cyan);
+}
+.btn-download:hover { background: #d4ede8; border-color: var(--cyan); }
+.btn-pdf {
+  background: var(--gold-bg); border-color: #e0d0a0; color: var(--gold);
+}
+.btn-pdf:hover { background: #f5eccc; border-color: var(--gold2); }
+
+/* ── Download bar ────────────────────────────────── */
+.download-bar {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 18px 20px;
+  background: var(--paper2); border: 1px solid var(--border);
+  border-radius: 3px; margin: 16px 0;
+}
+.download-bar-label {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink3);
+  width: 100%; margin-bottom: 4px;
+}
 
 /* ── Section header ─────────────────────────────── */
 .sec-header {
@@ -204,6 +224,7 @@ nav {
 .code-dots span:nth-child(1) { background: #ff5f57; }
 .code-dots span:nth-child(2) { background: #ffbd2e; }
 .code-dots span:nth-child(3) { background: #28ca41; }
+.code-head-right { display: flex; align-items: center; gap: 12px; }
 .code-lang {
   font-family: var(--mono); font-size: .6rem; letter-spacing: .1em;
   color: var(--cyan); text-transform: uppercase;
@@ -306,6 +327,19 @@ pre {
 .cmp-table td:first-child { color: var(--ink2); font-weight: 500; font-family: var(--mono); font-size: .8rem; }
 .cmp-table tr:hover td { background: var(--paper2); }
 
+/* ── Conclusion items ────────────────────────────── */
+.conclusion-item {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+.conclusion-item:last-child { border-bottom: none; }
+.conclusion-n {
+  font-family: var(--serif); font-size: 1.6rem; color: var(--gold3);
+  font-weight: 300; line-height: 1; flex-shrink: 0; width: 32px; padding-top: 2px;
+}
+.conclusion-text h4 { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); margin-bottom: 6px; }
+.conclusion-text p  { font-size: .88rem; color: var(--ink3); line-height: 1.75; }
+
 /* ── Footer ──────────────────────────────────────── */
 footer {
   position: relative; z-index: 1; border-top: 1px solid var(--border);
@@ -317,12 +351,6 @@ footer a:hover { text-decoration: underline; }
 
 /* ── Separator ───────────────────────────────────── */
 .sep { height: 1px; background: var(--border); margin: 32px 0; }
-
-/* ── Inline math highlight ───────────────────────── */
-.math-inline {
-  font-family: var(--mono); font-size: .8rem; color: var(--gold2);
-  background: var(--gold-bg); padding: 1px 6px; border-radius: 2px;
-}
 
 @media (max-width: 680px) {
   nav { padding: 0 16px; }
@@ -345,6 +373,7 @@ footer a:hover { text-decoration: underline; }
     <li><button onclick="nav('experimento')" id="nb-experimento" >Experimento</button></li>
     <li><button onclick="nav('resultados')"  id="nb-resultados"  >Resultados</button></li>
     <li><button onclick="nav('codigo')"      id="nb-codigo"      >Código</button></li>
+    <li><button onclick="nav('conclusoes')"  id="nb-conclusoes"  >Conclusões</button></li>
     <li><button onclick="nav('relatorio')"   id="nb-relatorio"   >Relatório</button></li>
   </ul>
 </nav>
@@ -360,10 +389,11 @@ footer a:hover { text-decoration: underline; }
     <p class="hero-subtitle">Equações Diferenciais Ordinárias — Viana &amp; Espinar, IMPA 2025</p>
     <div class="hero-divider"></div>
     <p class="hero-body">
-      Implementação do experimento §&thinsp;2.6, cobrindo a iteração de Picard para aproximação de soluções de EDOs.
-      O projeto inclui análise de convergência numérica, comparativo entre integradores
-      do <strong>trapézio</strong> e do <strong>retângulo</strong>, otimização de complexidade
-      <strong>O(NL²) → O(NL)</strong> e extensão para sistemas de dimensão <em>d</em>&thinsp;=&thinsp;2.
+      Implementação completa do experimento §&thinsp;2.6, cobrindo a iteração de Picard para
+      aproximação de soluções de EDOs. O projeto inclui análise de convergência numérica,
+      comparativo entre integradores do <strong>trapézio</strong> e do <strong>retângulo</strong>,
+      otimização de complexidade <strong>O(NL²) → O(NL)</strong> via acumulação incremental
+      (fator&thinsp;≈&thinsp;2500×) e extensão para sistemas de dimensão <em>d</em>&thinsp;=&thinsp;2.
     </p>
     <div class="hero-meta">
       <div class="hero-meta-item">
@@ -378,12 +408,18 @@ footer a:hover { text-decoration: underline; }
         <span class="hero-meta-label">Ano</span>
         <span class="hero-meta-value">2026</span>
       </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Referência</span>
+        <span class="hero-meta-value">Viana &amp; Espinar, IMPA 2025</span>
+      </div>
     </div>
     <div class="hero-btns">
-      <button class="btn btn-primary"    onclick="nav('teoria')">Ver teoria</button>
-      <button class="btn btn-secondary"  onclick="nav('resultados')">Resultados</button>
+      <button class="btn btn-primary"   onclick="nav('teoria')">Ver teoria</button>
+      <button class="btn btn-secondary" onclick="nav('resultados')">Resultados</button>
       <a href="https://github.com/VictorMoura22/experimento-picard"
          class="btn btn-secondary" target="_blank">GitHub ↗</a>
+      <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/relatorio-picard.pdf"
+         class="btn btn-pdf" download>⬇ Relatório PDF</a>
     </div>
   </div>
 </div>
@@ -401,7 +437,8 @@ footer a:hover { text-decoration: underline; }
     <div class="card-title">Existência, unicidade e convergência</div>
     <p class="card-body">
       Dado o PVI \(x' = F(t,x)\), \(x(t_0)=x_0\), com \(F\) contínua e Lipschitziana em \(x\),
-      fixe \(\delta > 0\) tal que \(B_\delta(t_0)\times B_\delta(x_0)\subset U\). Define-se:
+      fixe \(\delta > 0\) tal que \(\bar{B}_\delta(t_0)\times \bar{B}_\delta(x_0)\subset \mathcal{U}\).
+      Define-se:
     </p>
     <div class="formula-box">
       M(δ) = sup{ ‖F(t,x)‖ : |t−t₀| ≤ δ, ‖x−x₀‖ ≤ δ }<br>
@@ -411,7 +448,8 @@ footer a:hover { text-decoration: underline; }
     <p class="card-body">
       Para todo \(\varepsilon \leq \varepsilon(\delta)\) existe solução única
       \(x:(t_0-\varepsilon, t_0+\varepsilon)\to\mathbb{R}^d\), e os iterados de Picard
-      convergem uniformemente (Teorema 2.12 de [1]).
+      \(\gamma_0 \equiv x_0\), \(\gamma_{n+1}(t) = x_0 + \int_{t_0}^t F(s,\gamma_n(s))\,ds\)
+      convergem uniformemente (Teorema 2.12 de Viana &amp; Espinar).
     </p>
   </div>
 
@@ -423,9 +461,11 @@ footer a:hover { text-decoration: underline; }
         ‖γₙ − x‖∞ ≤ M(δ) · (C(δ)·ε)ⁿ / n!
       </div>
       <p class="card-body">
-        O fatorial no denominador garante convergência para qualquer valor de \(C(\delta)\varepsilon\).
+        O fatorial no denominador garante convergência para qualquer \(C\varepsilon\).
         Se \(C\varepsilon \leq 1\): a cota decresce desde o primeiro iterado.
-        Se \(C\varepsilon > 1\): cresce até \(n \approx C\varepsilon\) e só então decai.
+        Se \(C\varepsilon > 1\): cresce até \(n \approx C\varepsilon\) e só então decai —
+        o que ocorre no Objetivo 4 com \(\varepsilon_{\mathrm{num}}=0{,}99\) e
+        \(C\varepsilon \approx 3{,}96\).
       </p>
     </div>
 
@@ -440,22 +480,26 @@ footer a:hover { text-decoration: underline; }
       </div>
       <p class="card-body">
         Com \(C^*\varepsilon^* = 1\), a cota reduz-se a \(4/n!\),
-        garantindo \(\|\gamma_8 - x\|_\infty \lesssim 10^{-4}\).
+        garantindo \(\|\gamma_8 - x\|_\infty \lesssim 9{,}9\times10^{-5}\).
+        O valor \(\delta^*=1\) é o único máximo de \(\varepsilon(\delta)=\delta/(1+\delta)^2\),
+        obtido anulando a derivada: \((1-\delta)/(1+\delta)^3 = 0\).
       </p>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-tag">Sistema 2D — resultado central</div>
-    <div class="card-title">C(δ) = 1 constante para x″ = −x + 2 sen t</div>
+    <div class="card-tag">Sistema 2D — Objetivo 5</div>
+    <div class="card-title">C(δ) = 1 constante — isometria</div>
     <p class="card-body">
-      Reescrevendo como sistema \((x_1,x_2)' = (x_2,\,-x_1+2\text{sen}\,t)\),
-      a parte linear tem matriz
-      \(A = \bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\),
-      que é uma <em>rotação</em> — isometria com \(\|A\|_2 = 1\). Logo \(C(\delta)=1\)
-      para todo \(\delta\), tornando a cota \(M(\delta)\,\varepsilon^n/n!\) sem o fator
-      \((C\varepsilon)^n\) que penalizava o caso escalar. A solução é inteira em
-      \(\mathbb{R}\), sem nenhuma singularidade real.
+      Para \(x'' = -x + 2\sin t\), o sistema equivalente é
+      \((x_1,x_2)' = (x_2,\,-x_1+2\sin t)\) com parte linear
+      \(A = \bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\).
+      Como \(A\) é uma <em>rotação</em> (isometria com \(\|A\|_2 = 1\)),
+      a constante de Lipschitz é \(C(\delta) = 1\) para todo \(\delta\).
+      Consequentemente, com \(C\varepsilon = 1\) a cota \(M(\delta)\,\varepsilon^n/n!\)
+      decresce monotonamente desde o primeiro iterado, sem o período de crescimento
+      inicial que afeta o Objetivo 4. Além disso, a solução
+      \(x_1(t) = (1-t)\cos t + \sin t\) é inteira em \(\mathbb{R}\), sem singularidades reais.
     </p>
   </div>
 
@@ -464,13 +508,15 @@ footer a:hover { text-decoration: underline; }
     <div class="formula-box" style="font-size:.72rem">
       ‖γₙʰ − x‖∞  ≤  M(δ)·(C(δ)·ε)ⁿ/n!   +   O(ε²·L⁻ᵖ)
                        ↑ erro de convergência     ↑ erro de quadratura
-      p = 2  (trapézio)     p = 1  (retângulo)
+      p = 2  (trapézio, O(h²) por passo)
+      p = 1  (retângulo, O(h) por passo)
     </div>
     <p class="card-body">
-      Aumentar \(N\) reduz o primeiro exponencialmente via o fatorial.
-      Aumentar \(L\) reduz o segundo como \(L^{-p}\).
+      Aumentar \(N\) reduz o primeiro exponencialmente via o fatorial;
+      aumentar \(L\) reduz o segundo como \(L^{-p}\).
       O retângulo atinge um <em>piso de erro irredutível</em> \(\propto \varepsilon^2/L\)
-      que não desaparece aumentando \(N\) — apenas aumentando \(L\).
+      que não desaparece aumentando \(N\) — apenas aumentando \(L\) ou diminuindo \(\varepsilon\).
+      O trapézio converge duas ordens a mais em \(L\), tornando-o sempre preferível.
     </p>
   </div>
 </div>
@@ -491,8 +537,9 @@ footer a:hover { text-decoration: underline; }
         <div class="step-n">1</div>
         <div class="step-content">
           <h4>Implementação básica <span class="badge badge-done">concluído</span></h4>
-          <p>Operador de Picard como recorrência matricial em \([0,\varepsilon^*]\).
-          Primeira validação contra a solução exata \(x(t)=1/(1-t)\).</p>
+          <p>Operador de Picard como recorrência matricial em \([0,\varepsilon^*]\) com
+          \(\varepsilon^*=0{,}25\). Primeira validação contra a solução exata \(x(t)=1/(1-t)\).
+          Com \(C\varepsilon^*=1\), a cota \(4/n!\) decresce monotonamente desde o 1.º iterado.</p>
         </div>
       </div>
       <div class="step">
@@ -500,32 +547,38 @@ footer a:hover { text-decoration: underline; }
         <div class="step-content">
           <h4>Trapézio vs. Retângulo <span class="badge badge-done">concluído</span></h4>
           <p>Comparação dos dois integradores em \([0,\,0{,}5]\).
-          Conexão entre iterados de Picard e somas parciais de \(\sum t^k\).</p>
+          Os iterados coincidem com as somas parciais de \(\sum t^k\),
+          explicando a convergência além de \(\varepsilon^*\) para todo \(|t|&lt;1\).
+          O trapézio atinge piso numérico \(\sim 10^{-7}\); o retângulo estabiliza em \(\sim 7\times10^{-4}\).</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n">3</div>
         <div class="step-content">
           <h4>Domínio simétrico \((-\varepsilon,\varepsilon)\) <span class="badge badge-done">concluído</span></h4>
-          <p>Integração bidirecional a partir de \(t_0=0\). Piso irredutível do
-          retângulo no extremo esquerdo identificado e explicado.</p>
+          <p>Integração bidirecional a partir de \(t_0=0\).
+          \(L\) ímpar garante \(t_{i_0}=0\) exatamente (\(i_0=\lfloor L/2\rfloor\)).
+          Piso irredutível do retângulo no extremo esquerdo \(\propto\varepsilon^2/L\) identificado e explicado:
+          o erro acumulado integrando com pontos à esquerda não se cancela aumentando \(N\).</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n">4</div>
         <div class="step-content">
           <h4>Domínios maiores — análise teórica + otimização <span class="badge badge-done">concluído</span></h4>
-          <p>Cálculo de \(M(\delta)\), \(C(\delta)\), \(\delta^*\), \(N_{\max}(\tau)\).
+          <p>Cálculo de \(M(\delta)\), \(C(\delta)\), \(\delta^*=1\), \(N_{\max}(\tau)\).
           Redução de complexidade \(\mathcal{O}(NL^2)\to\mathcal{O}(NL)\) via
-          acumulação incremental (fator \(\approx 2500\times\) para os parâmetros usados).</p>
+          acumulação incremental — fator \(\approx 2500\times\) para \(N=30\), \(L=20001\)
+          (de \(\approx 3\times10^9\) para \(\approx 1{,}2\times10^6\) operações).</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n">5</div>
         <div class="step-content">
           <h4>Sistema 2D — \(d=2\) <span class="badge badge-done">concluído</span></h4>
-          <p>Tensor \((N+1)\times L\times 2\). \(C(\delta)=1\) exato via norma espectral.
-          Solução inteira. Validado contra <code style="color:var(--cyan);font-family:var(--mono);font-size:.8rem">scipy.integrate.solve_ivp</code>.</p>
+          <p>Dimensões \((N+1)\times L\times 2\). \(C(\delta)=1\) exato via norma espectral de
+          \(A=\bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\).
+          Solução inteira \(x_1(t)=(1-t)\cos t+\sin t\). </p>
         </div>
       </div>
     </div>
@@ -544,28 +597,14 @@ footer a:hover { text-decoration: underline; }
     <div class="card gold">
       <div class="card-tag">EDO1.py · ε = 0,25 · L = 500 · N = 8</div>
       <div class="card-title">Operador de Picard — implementação inicial</div>
-      <p class="card-body">Com \(C(\delta^*)\varepsilon^* = 1\), a cota \(\|\gamma_n-x\|_\infty\leq 4/n!\)
-      decresce monotonamente desde o primeiro iterado.
-      Para \(n=8\): \(4/8!\approx 9{,}9\times10^{-5}\).</p>
-    </div>
-    <div class="code-wrap">
-      <div class="code-head">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <span class="code-lang">EDO1.py</span>
-      </div>
-<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
-
-eps <span class="op">=</span> <span class="num">0.25</span>;  L <span class="op">=</span> <span class="num">500</span>;  N <span class="op">=</span> <span class="num">8</span>;  x0 <span class="op">=</span> <span class="num">1.0</span>
-t <span class="op">=</span> np.<span class="fn">linspace</span>(<span class="num">0</span>, eps, L)
-
-<span class="kw">def</span> <span class="fn">F</span>(t, x): <span class="kw">return</span> x<span class="op">**</span><span class="num">2</span>
-
-y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">+</span><span class="num">1</span>, L));  y[<span class="num">0</span>] <span class="op">=</span> x0
-
-<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
-    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
-        intg <span class="op">=</span> <span class="fn">F</span>(t[:k<span class="op">+</span><span class="num">1</span>], y[n, :k<span class="op">+</span><span class="num">1</span>])
-        y[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">trapezoid</span>(intg, t[:k<span class="op">+</span><span class="num">1</span>])</pre>
+      <p class="card-body">
+        O domínio \([0, \varepsilon^*=0{,}25]\) maximiza \(\varepsilon(\delta)=\delta/(1+\delta)^2\)
+        em \(\delta^*=1\). Com \(C(\delta^*)\varepsilon^* = 1\), a cota
+        \(\|\gamma_n-x\|_\infty\leq 4/n!\) decresce monotonamente desde o primeiro iterado.
+        Para \(n=8\): \(4/8!\approx 9{,}9\times10^{-5}\).
+        A convergência observada é tipicamente melhor, pois a cota usa o supremo sobre toda a bola
+        \(B_{\delta^*}(x_0)\) e não apenas sobre a trajetória da solução.
+      </p>
     </div>
   </div>
 
@@ -574,10 +613,14 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
       <div class="card-tag">EDO2.py · ε = 0,5 · L = 2000 · N = 14</div>
       <div class="card-title">Convergência além de ε* — série geométrica</div>
       <p class="card-body">
-        Para \(F=x^2\), os iterados coincidem com as somas parciais de
-        \(x(t)=\sum_{k=0}^\infty t^k\), convergindo para todo \(|t|&lt;1\)
-        mesmo que o Teorema 2.12 só garanta \(\varepsilon\leq 0{,}25\).
-        O trapézio atinge piso numérico \(\sim 10^{-7}\); o retângulo estabiliza em \(\sim 7\times10^{-4}\).
+        Para \(F=x^2\), os iterados de Picard coincidem exatamente com as somas parciais de
+        \(x(t)=\sum_{k=0}^\infty t^k = 1/(1-t)\), cujo raio de convergência é \(|t|&lt;1\).
+        Portanto, para qualquer \(\varepsilon&lt;1\), os iterados convergem para a solução exata,
+        embora o Teorema 2.12 só garanta isso para \(\varepsilon\leq 0{,}25\). Este é um dos
+        pontos matematicamente mais elegantes: o método de Picard constrói, iterado a iterado,
+        os coeficientes da expansão em série de Taylor da solução.<br><br>
+        O trapézio atinge piso numérico \(\sim 10^{-7}\); o retângulo estabiliza em
+        \(\sim 6{,}93\times10^{-4}\) — piso irredutível que não diminui aumentando \(N\).
       </p>
     </div>
   </div>
@@ -587,10 +630,14 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
       <div class="card-tag">EDO3.py · ε = 0,85 · L = 10001 (ímpar) · N = 14</div>
       <div class="card-title">Integração bidirecional — piso irredutível do retângulo</div>
       <p class="card-body">
-        \(L\) ímpar garante \(t_{i_0}=0\) exatamente (\(i_0=\lfloor L/2\rfloor\)).
-        O erro global do retângulo em \([t,0]\) é \(\mathcal{O}(h)\cdot|t|=\mathcal{O}(\varepsilon^2/L)\),
-        constante em \(N\). O trapézio converge como \(\mathcal{O}(\varepsilon^3/L^2)\) —
-        duas ordens a mais em \(L\).
+        Para \(t&lt;0\), a equação integral exige
+        \(\gamma_{n+1}(t) = x_0 - \int_t^0 F(s,\gamma_n(s))\,ds\).
+        O algoritmo divide-se em dois ramos a partir de \(i_0=\lfloor L/2\rfloor=5000\).<br><br>
+        O erro global do retângulo ao integrar sobre \([t,\,0]\) é
+        \(\mathcal{O}(h)\cdot|t| = \mathcal{O}(\varepsilon^2/L)\), constante em \(N\).
+        O trapézio converge como \(\mathcal{O}(\varepsilon^3/L^2)\) — duas ordens a mais em \(L\).
+        Os decaimentos observados no gráfico de erros são pontos onde a curva iterada toca a
+        solução exata antes de cruzá-la no sentido da convergência.
       </p>
     </div>
   </div>
@@ -600,10 +647,15 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
       <div class="card-tag">EDO4.py · ε = 0,99 · L = 20001 · N = 30</div>
       <div class="card-title">Acumulação incremental — O(NL²) → O(NL)</div>
       <p class="card-body">
-        A recorrência \(I_k^+=I_{k-1}^++(f_{k-1}+f_k)h/2\) reduz o custo
-        de \(\approx 3\times10^9\) para \(\approx 1{,}2\times10^6\) operações —
-        fator \(2500\times\). O parâmetro ótimo \(\delta^*=1\) é o único máximo de
-        \(\varepsilon(\delta)=\delta/(1+\delta)^2\).
+        Na implementação direta, o custo de calcular \(\gamma_{n+1}(t_k)\) é
+        \(\Theta(k-i_0)\) operações, totalizando \(\mathcal{O}(L^2)\) por iterado.
+        A recorrência incremental \(I_k^+ = I_{k-1}^+ + (f_{k-1}+f_k)\,h/2\)
+        custa \(\Theta(1)\) por passo, reduzindo para \(\mathcal{O}(L)\).<br><br>
+        Para \(N=30\), \(L=20001\): \(\approx3\times10^9\to\approx1{,}2\times10^6\) operações — fator \(2500\times\).<br><br>
+        Com \(\varepsilon_{\mathrm{num}}=0{,}99\) e \(C\varepsilon\approx3{,}96>1\),
+        os iterados pioram antes de convergir (os primeiros \(\approx 4\) iterados crescem),
+        consistentemente com a Observação 2.14. A convergência ocorre via a série geométrica,
+        que converge para todo \(|t|&lt;1\).
       </p>
     </div>
   </div>
@@ -611,12 +663,16 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
   <div id="tab-obj5" class="tab-panel">
     <div class="card red">
       <div class="card-tag">EDO5.py · ε = 0,947 · L = 20001 · N = 14 · d = 2</div>
-      <div class="card-title">Tensor (N+1)×L×2 — C(δ) = 1 exato</div>
+      <div class="card-title">Dimensões (N+1)×L×2 — C(δ) = 1 exato</div>
       <p class="card-body">
-        A matriz \(A=\bigl(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\bigr)\)
-        é isometria (\(\|A\|_2=1\)), logo \(C(\delta)=1\) para todo \(\delta\).
-        Com \(C\varepsilon=1\), a cota decai como \(M(\delta^*)/n!\) desde o primeiro
-        iterado. Solução inteira: sem limitação de domínio análoga ao teto \(|t|&lt;1\).
+        A adaptação para \(d=2\) é mínima estruturalmente: os arrays ganham uma dimensão extra e
+        o NumPy aplica a recorrência elemento a elemento sem alteração de código.
+        \(F(t,\mathbf{x}) - F(t,\mathbf{y}) = (x_2-y_2,\,-(x_1-y_1))^T\),
+        portanto \(\|F(t,\mathbf{x})-F(t,\mathbf{y})\| = \|\mathbf{x}-\mathbf{y}\|\)
+        e \(C(\delta)=1\) exato para todo \(\delta\).<br><br>
+        Com \(C\varepsilon=1\), a cota \(M(\delta^*)/n!\) decresce desde o 1.º iterado —
+        sem o período inicial de piora do Objetivo 4. A solução \(x_1(t)=(1-t)\cos t+\sin t\)
+        é inteira em \(\mathbb{R}\): sem limitação de domínio análoga ao teto \(|t|&lt;1\).
       </p>
     </div>
   </div>
@@ -646,17 +702,18 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
         <div class="card-tag">Obj. 1 · ε = 0,25 · L = 500 · N = 8</div>
         <div class="card-title">Erro máximo ‖γₙ − x‖∞ — Trapézio</div>
         <table class="err-table" style="margin-top:12px">
-          <thead><tr><th>n</th><th>Trapézio</th></tr></thead>
+          <thead><tr><th>n</th><th>Trapézio</th><th>Cota 4/n!</th></tr></thead>
           <tbody>
-            <tr><td>0</td><td class="bad">3.33e−01</td></tr>
-            <tr><td>1</td><td class="bad">8.33e−02</td></tr>
-            <tr><td>2</td><td class="mid">1.56e−02</td></tr>
-            <tr><td>3</td><td class="mid">2.25e−03</td></tr>
-            <tr><td>5</td><td class="mid">2.49e−05</td></tr>
-            <tr><td>7</td><td class="good">7.39e−08</td></tr>
-            <tr><td>8</td><td class="good">6.49e−08</td></tr>
+            <tr><td>0</td><td class="bad">3.33e−01</td><td class="bad">4.00e+00</td></tr>
+            <tr><td>1</td><td class="bad">8.33e−02</td><td class="bad">4.00e+00</td></tr>
+            <tr><td>2</td><td class="mid">1.56e−02</td><td class="mid">2.00e+00</td></tr>
+            <tr><td>3</td><td class="mid">2.25e−03</td><td class="mid">6.67e−01</td></tr>
+            <tr><td>5</td><td class="mid">2.49e−05</td><td class="mid">3.33e−02</td></tr>
+            <tr><td>7</td><td class="good">7.39e−08</td><td class="good">7.94e−04</td></tr>
+            <tr><td>8</td><td class="good">6.49e−08</td><td class="good">9.92e−05</td></tr>
           </tbody>
         </table>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">Convergência melhor que a cota, como esperado.</p>
       </div>
 
       <div class="card">
@@ -673,7 +730,7 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
             <tr><td>14</td> <td class="good">1.25e−07</td><td class="floor">6.93e−04 ⌊</td></tr>
           </tbody>
         </table>
-        <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">⌊ piso irredutível do retângulo</p>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">⌊ piso irredutível do retângulo ∝ ε²/L</p>
       </div>
     </div>
   </div>
@@ -695,7 +752,7 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
         </tbody>
       </table>
       <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">
-        ⌊ piso do retângulo proporcional a ε²/L — não reduzível aumentando N
+        ⌊ piso do retângulo ∝ ε²/L — irredutível em N; apenas L maior ou ε menor o reduzem
       </p>
     </div>
   </div>
@@ -715,17 +772,17 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
             <tr><td>2,00</td><td>9,0000</td><td>6,0000</td><td>0,2222</td><td>12</td></tr>
           </tbody>
         </table>
-        <p style="font-size:.72rem;color:var(--ink3);margin-top:6px">* δ* = 1 maximiza ε(δ)</p>
+        <p style="font-size:.72rem;color:var(--ink3);margin-top:6px">* δ* = 1 é o único máximo de ε(δ)</p>
       </div>
       <div class="card">
         <div class="card-tag">N_max(τ) com δ* = 1, ε* = 0,25</div>
         <table class="err-table" style="margin-top:8px">
           <thead><tr><th>τ</th><th>N_max</th></tr></thead>
           <tbody>
-            <tr><td>10⁻²</td><td class="good">6</td></tr>
-            <tr><td>10⁻⁴</td><td class="good">8</td></tr>
-            <tr><td>10⁻⁶</td><td class="mid">11</td></tr>
-            <tr><td>10⁻⁸</td><td class="mid">12</td></tr>
+            <tr><td>10⁻²</td> <td class="good">6</td></tr>
+            <tr><td>10⁻⁴</td> <td class="good">8</td></tr>
+            <tr><td>10⁻⁶</td> <td class="mid">11</td></tr>
+            <tr><td>10⁻⁸</td> <td class="mid">12</td></tr>
             <tr><td>10⁻¹⁰</td><td class="mid">14</td></tr>
             <tr><td>10⁻¹²</td><td class="bad">17</td></tr>
           </tbody>
@@ -755,20 +812,20 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
         </table>
       </div>
       <div class="card">
-        <div class="card-tag">N_max(τ) comparativo</div>
+        <div class="card-tag">N_max(τ) comparativo — EDO4 vs EDO5</div>
         <table class="err-table" style="margin-top:8px;font-size:.75rem">
           <thead><tr><th>τ</th><th>EDO4 (F=x²)</th><th>EDO5 (2D)</th></tr></thead>
           <tbody>
-            <tr><td>10⁻²</td><td>6</td><td>6</td></tr>
-            <tr><td>10⁻⁴</td><td>8</td><td>8</td></tr>
-            <tr><td>10⁻⁶</td><td>11</td><td class="good">10</td></tr>
-            <tr><td>10⁻⁸</td><td>12</td><td>12</td></tr>
+            <tr><td>10⁻²</td> <td>6</td><td>6</td></tr>
+            <tr><td>10⁻⁴</td> <td>8</td><td>8</td></tr>
+            <tr><td>10⁻⁶</td> <td>11</td><td class="good">10</td></tr>
+            <tr><td>10⁻⁸</td> <td>12</td><td>12</td></tr>
             <tr><td>10⁻¹⁰</td><td>14</td><td>14</td></tr>
             <tr><td>10⁻¹²</td><td>16</td><td>16</td></tr>
           </tbody>
         </table>
         <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">
-          C(δ)=1 torna o sistema 2D intrinsecamente mais favorável.
+          C(δ)=1 torna o sistema 2D intrinsecamente mais favorável ao método.
         </p>
       </div>
     </div>
@@ -785,112 +842,370 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
     <h2 class="sec-title">Código</h2>
   </div>
 
+  <!-- Downloads rápidos -->
+  <div class="download-bar">
+    <div class="download-bar-label">Download direto dos arquivos</div>
+    <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO1.py"
+       class="btn btn-download" download>⬇ EDO1.py</a>
+    <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO2.py"
+       class="btn btn-download" download>⬇ EDO2.py</a>
+    <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO3.py"
+       class="btn btn-download" download>⬇ EDO3.py</a>
+    <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO4.py"
+       class="btn btn-download" download>⬇ EDO4.py</a>
+    <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO5.py"
+       class="btn btn-download" download>⬇ EDO5.py</a>
+    <a href="https://github.com/VictorMoura22/experimento-picard"
+       class="btn btn-secondary" target="_blank">Repositório completo ↗</a>
+  </div>
+
   <div class="card full" style="margin-bottom:16px">
     <div class="card-tag">Evolução dos algoritmos</div>
     <table class="cmp-table" style="margin-top:12px">
       <thead>
         <tr>
           <th>Arquivo</th><th>Domínio</th><th>d</th>
-          <th>Complexidade</th><th>Análise teórica</th>
+          <th>Complexidade</th><th>Novidade</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>EDO1.py</td>
-          <td>[0, 0,25]</td><td>1</td>
+          <td>EDO1.py</td><td>[0, 0,25]</td><td>1</td>
           <td><span class="complexity">O(NL²)</span></td>
-          <td style="color:var(--ink3)">—</td>
+          <td style="color:var(--ink3)">Implementação base do operador de Picard</td>
         </tr>
         <tr>
-          <td>EDO2.py</td>
-          <td>[0, 0,5]</td><td>1</td>
+          <td>EDO2.py</td><td>[0, 0,5]</td><td>1</td>
           <td><span class="complexity">O(NL²)</span></td>
-          <td style="color:var(--ink3)">—</td>
+          <td style="color:var(--ink3)">Comparação trapézio vs. retângulo</td>
         </tr>
         <tr>
-          <td>EDO3.py</td>
-          <td>(−0,85, 0,85)</td><td>1</td>
+          <td>EDO3.py</td><td>(−0,85, 0,85)</td><td>1</td>
           <td><span class="complexity">O(NL²)</span></td>
-          <td style="color:var(--ink3)">—</td>
+          <td style="color:var(--ink3)">Integração bidirecional; piso do retângulo</td>
         </tr>
         <tr>
-          <td>EDO4.py</td>
-          <td>(−0,99, 0,99)</td><td>1</td>
+          <td>EDO4.py</td><td>(−0,99, 0,99)</td><td>1</td>
           <td><span class="complexity fast">O(NL)</span></td>
-          <td style="color:var(--cyan)">M(δ), C(δ), N_max(τ)</td>
+          <td style="color:var(--cyan)">Acumulação incremental; M(δ), C(δ), N_max(τ)</td>
         </tr>
         <tr>
-          <td>EDO5.py</td>
-          <td>(−0,947, 0,947)</td><td>2</td>
+          <td>EDO5.py</td><td>(−0,947, 0,947)</td><td>2</td>
           <td><span class="complexity fast">O(NL)</span></td>
-          <td style="color:var(--cyan)">C(δ)=1, M(δ), sistema 2D</td>
+          <td style="color:var(--cyan)"> C(δ)=1; sistema 2D.</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="grid2">
-    <div class="card">
-      <div class="card-tag">Otimização — fator 2500×</div>
-      <div class="card-title">O(NL²) → O(NL)</div>
-      <p class="card-body" style="margin-bottom:12px">
-        A versão direta recalcula \(\int_{t_{i_0}}^{t_k}\) integralmente a cada ponto:
-        \(\sum_{k=i_0}^{L-1}(k-i_0)=\mathcal{O}(L^2)\) por iterado.<br><br>
-        A acumulação incremental usa:
-      </p>
-      <div class="formula-box" style="font-size:.72rem">
-        I⁺ₖ = I⁺ₖ₋₁ + (fₖ₋₁ + fₖ)/2 · h   [trapézio]<br>
-        I⁻ₖ = I⁻ₖ₊₁ + (fₖ + fₖ₊₁)/2 · h   [negativo]
+  <!-- Tabs de código -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'c1')">EDO1</button>
+    <button class="tab"        onclick="switchTab(this,'c2')">EDO2</button>
+    <button class="tab"        onclick="switchTab(this,'c3')">EDO3</button>
+    <button class="tab"        onclick="switchTab(this,'c4')">EDO4</button>
+    <button class="tab"        onclick="switchTab(this,'c5')">EDO5</button>
+  </div>
+
+  <div id="tab-c1" class="tab-panel active">
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-head-right">
+          <span class="code-lang">EDO1.py · ε=0,25 · L=500 · N=8</span>
+          <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO1.py"
+             class="btn btn-download" style="padding:4px 12px;font-size:.58rem" download>⬇ Download</a>
+        </div>
       </div>
-      <p class="card-body">
-        Cada passo custa Θ(1) → custo total O(NL).
-        Para N=30, L=20001: ≈3×10⁹ → ≈1,2×10⁶ operações.
-      </p>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+eps <span class="op">=</span> <span class="num">0.25</span>;  L <span class="op">=</span> <span class="num">500</span>;  N <span class="op">=</span> <span class="num">8</span>;  x0 <span class="op">=</span> <span class="num">1.0</span>
+t <span class="op">=</span> np.<span class="fn">linspace</span>(<span class="num">0</span>, eps, L)
+
+<span class="kw">def</span> <span class="fn">F</span>(t, x): <span class="kw">return</span> x<span class="op">**</span><span class="num">2</span>
+
+y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">+</span><span class="num">1</span>, L));  y[<span class="num">0</span>] <span class="op">=</span> x0
+
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
+        intg <span class="op">=</span> <span class="fn">F</span>(t[:k<span class="op">+</span><span class="num">1</span>], y[n, :k<span class="op">+</span><span class="num">1</span>])
+        y[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">trapezoid</span>(intg, t[:k<span class="op">+</span><span class="num">1</span>])</pre>
+    </div>
+    <p class="card-body" style="padding:0 4px;font-size:.85rem;color:var(--ink3)">
+      A matriz <code style="font-family:var(--mono);font-size:.8rem">y[n,k]</code> armazena \(\gamma_n(t_k)\).
+      Para cada \(t_k\), integra \(F(s,\gamma_n(s))\) de \(0\) a \(t_k\) pela regra do trapézio sobre \(k+1\) pontos.
+      Complexidade \(\mathcal{O}(NL^2)\) pois cada ponto recalcula toda a integral acumulada.
+    </p>
+  </div>
+
+  <div id="tab-c2" class="tab-panel">
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-head-right">
+          <span class="code-lang">EDO2.py · trecho das duas regras</span>
+          <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO2.py"
+             class="btn btn-download" style="padding:4px 12px;font-size:.58rem" download>⬇ Download</a>
+        </div>
+      </div>
+<pre>h <span class="op">=</span> t[<span class="num">1</span>] <span class="op">-</span> t[<span class="num">0</span>]
+
+<span class="cm"># Trapézio</span>
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
+        intg <span class="op">=</span> <span class="fn">F</span>(t[:k<span class="op">+</span><span class="num">1</span>], y_tp[n, :k<span class="op">+</span><span class="num">1</span>])
+        y_tp[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">trapezoid</span>(intg, t[:k<span class="op">+</span><span class="num">1</span>])
+
+<span class="cm"># Retângulo — pontos à esquerda de cada subintervalo</span>
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
+        intg <span class="op">=</span> <span class="fn">F</span>(t[:k<span class="op">+</span><span class="num">1</span>], y_rt[n, :k<span class="op">+</span><span class="num">1</span>])
+        y_rt[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">sum</span>(intg[:<span class="op">-</span><span class="num">1</span>]) <span class="op">*</span> h</pre>
+    </div>
+    <p class="card-body" style="padding:0 4px;font-size:.85rem;color:var(--ink3)">
+      <code style="font-family:var(--mono);font-size:.8rem">intg[:-1]</code> seleciona os \(k\) pontos à esquerda
+      de cada subintervalo, implementando a regra do retângulo \(\sum f_{j-1}\,h\).
+    </p>
+  </div>
+
+  <div id="tab-c3" class="tab-panel">
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-head-right">
+          <span class="code-lang">EDO3.py · integração bidirecional</span>
+          <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO3.py"
+             class="btn btn-download" style="padding:4px 12px;font-size:.58rem" download>⬇ Download</a>
+        </div>
+      </div>
+<pre>i0 <span class="op">=</span> L <span class="op">//</span> <span class="num">2</span>   <span class="cm"># índice de t = 0</span>
+
+<span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(L):
+        <span class="kw">if</span> k <span class="op">&gt;</span> i0:      <span class="cm"># t &gt; 0: integral positiva</span>
+            intg         <span class="op">=</span> <span class="fn">F</span>(t[i0:k<span class="op">+</span><span class="num">1</span>], y_tp[n, i0:k<span class="op">+</span><span class="num">1</span>])
+            y_tp[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">+</span> np.<span class="fn">trapezoid</span>(intg, t[i0:k<span class="op">+</span><span class="num">1</span>])
+        <span class="kw">elif</span> k <span class="op">&lt;</span> i0:   <span class="cm"># t &lt; 0: sinal negativo</span>
+            intg         <span class="op">=</span> <span class="fn">F</span>(t[k:i0<span class="op">+</span><span class="num">1</span>], y_tp[n, k:i0<span class="op">+</span><span class="num">1</span>])
+            y_tp[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0 <span class="op">-</span> np.<span class="fn">trapezoid</span>(intg, t[k:i0<span class="op">+</span><span class="num">1</span>])
+        <span class="kw">else</span>:
+            y_tp[n<span class="op">+</span><span class="num">1</span>, k] <span class="op">=</span> x0</pre>
+    </div>
+    <p class="card-body" style="padding:0 4px;font-size:.85rem;color:var(--ink3)">
+      O sinal negativo em <code style="font-family:var(--mono);font-size:.8rem">x0 - trapezoid(...)</code>
+      implementa \(\gamma_{n+1}(t) = x_0 - \int_t^0 F(\cdot)\,ds\) para \(t&lt;0\).
+      L ímpar garante \(t_{i_0}=0\) exato.
+    </p>
+  </div>
+
+  <div id="tab-c4" class="tab-panel">
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-head-right">
+          <span class="code-lang">EDO4.py · acumulação incremental O(NL)</span>
+          <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO4.py"
+             class="btn btn-download" style="padding:4px 12px;font-size:.58rem" download>⬇ Download</a>
+        </div>
+      </div>
+<pre><span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(N):
+    f_tp <span class="op">=</span> <span class="fn">F</span>(t, y_tp[n])     <span class="cm"># avalia F uma vez em todos os pontos</span>
+
+    I_tp_pos <span class="op">=</span> np.<span class="fn">zeros</span>(L)
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(i0 <span class="op">+</span> <span class="num">1</span>, L):           <span class="cm"># direção positiva</span>
+        I_tp_pos[k] <span class="op">=</span> I_tp_pos[k<span class="op">-</span><span class="num">1</span>] <span class="op">+</span> (f_tp[k<span class="op">-</span><span class="num">1</span>]<span class="op">+</span>f_tp[k])<span class="op">/</span><span class="num">2.0</span> <span class="op">*</span> h
+
+    I_tp_neg <span class="op">=</span> np.<span class="fn">zeros</span>(L)
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(i0 <span class="op">-</span> <span class="num">1</span>, <span class="op">-</span><span class="num">1</span>, <span class="op">-</span><span class="num">1</span>):      <span class="cm"># direção negativa</span>
+        I_tp_neg[k] <span class="op">=</span> I_tp_neg[k<span class="op">+</span><span class="num">1</span>] <span class="op">+</span> (f_tp[k]<span class="op">+</span>f_tp[k<span class="op">+</span><span class="num">1</span>])<span class="op">/</span><span class="num">2.0</span> <span class="op">*</span> h
+
+    y_tp[n<span class="op">+</span><span class="num">1</span>, i0<span class="op">+</span><span class="num">1</span>:] <span class="op">=</span> x0 <span class="op">+</span> I_tp_pos[i0<span class="op">+</span><span class="num">1</span>:]
+    y_tp[n<span class="op">+</span><span class="num">1</span>, :i0]   <span class="op">=</span> x0 <span class="op">-</span> I_tp_neg[:i0]
+    y_tp[n<span class="op">+</span><span class="num">1</span>, i0]    <span class="op">=</span> x0</pre>
+    </div>
+    <p class="card-body" style="padding:0 4px;font-size:.85rem;color:var(--ink3)">
+      A recorrência \(I_k^+ = I_{k-1}^+ + (f_{k-1}+f_k)h/2\) custa \(\Theta(1)\) por passo,
+      reduzindo o custo total de \(\approx3\times10^9\) para \(\approx1{,}2\times10^6\) operações
+      (fator 2500×) para \(N=30\), \(L=20001\).
+    </p>
+  </div>
+
+  <div id="tab-c5" class="tab-panel">
+    <div class="code-wrap">
+      <div class="code-head">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-head-right">
+          <span class="code-lang">EDO5.py · sistema 2D - Dimensões (N+1)×L×2</span>
+          <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/EDO5.py"
+             class="btn btn-download" style="padding:4px 12px;font-size:.58rem" download>⬇ Download</a>
+        </div>
+      </div>
+<pre><span class="kw">def</span> <span class="fn">F</span>(t, x):            <span class="cm"># x tem forma (L, 2)</span>
+    dx1 <span class="op">=</span> x[:, <span class="num">1</span>]
+    dx2 <span class="op">=</span> <span class="op">-</span>x[:, <span class="num">0</span>] <span class="op">+</span> <span class="num">2.0</span> <span class="op">*</span> np.<span class="fn">sin</span>(t)
+    <span class="kw">return</span> np.<span class="fn">column_stack</span>([dx1, dx2])
+
+y_tp <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">+</span><span class="num">1</span>, L, <span class="num">2</span>))
+y_tp[<span class="num">0</span>, :, :] <span class="op">=</span> x0      <span class="cm"># x0 = array([1., 0.])</span>
+
+I_tp_pos <span class="op">=</span> np.<span class="fn">zeros</span>((L, <span class="num">2</span>))
+<span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(i0 <span class="op">+</span> <span class="num">1</span>, L):
+    I_tp_pos[k] <span class="op">=</span> I_tp_pos[k<span class="op">-</span><span class="num">1</span>] <span class="op">+</span> (f_tp[k<span class="op">-</span><span class="num">1</span>]<span class="op">+</span>f_tp[k]) <span class="op">/</span> <span class="num">2.0</span> <span class="op">*</span> h</pre>
+    </div>
+    <p class="card-body" style="padding:0 4px;font-size:.85rem;color:var(--ink3)">
+      A única modificação estrutural em relação ao EDO4: arrays ganham dimensão extra.
+      O NumPy aplica a recorrência elemento a elemento para ambas as componentes sem
+      alteração de código. A condição inicial passa de escalar para vetor.
+    </p>
+  </div>
+
+  <div class="grid2" style="margin-top:4px">
+    <div class="card">
+      <div class="card-tag">Otimização — comparativo de complexidade</div>
+      <table class="err-table" style="font-size:.72rem;margin-top:8px">
+        <thead><tr><th style="text-align:left">Versão</th><th>Complexidade</th><th>Operações (N=30, L=20001)</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left;color:var(--red)">Direta (EDO1–3)</td><td><span class="complexity">O(NL²)</span></td><td class="bad">≈ 3×10⁹</td></tr>
+          <tr><td style="text-align:left;color:var(--cyan)">Incremental (EDO4–5)</td><td><span class="complexity fast">O(NL)</span></td><td class="good">≈ 1,2×10⁶</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.72rem;color:var(--ink3);margin-top:8px">Fator de aceleração: ≈ 2500×</p>
     </div>
 
     <div class="card">
-      <div class="card-tag">Extensão para d = 2</div>
-      <div class="card-title">Tensor (N+1) × L × 2</div>
-      <p class="card-body" style="margin-bottom:12px">
-        A única modificação estrutural: todos os arrays ganham uma dimensão extra.
-        O NumPy aplica a recorrência elemento a elemento sem alteração de código.
-      </p>
-      <table class="err-table" style="font-size:.7rem">
-        <thead><tr><th>Objeto</th><th>EDO4 (d=1)</th><th>EDO5 (d=2)</th></tr></thead>
+      <div class="card-tag">Estrutura dos arrays — EDO4 vs EDO5</div>
+      <table class="err-table" style="font-size:.7rem;margin-top:8px">
+        <thead><tr><th style="text-align:left">Objeto</th><th>EDO4 (d=1)</th><th>EDO5 (d=2)</th></tr></thead>
         <tbody>
           <tr><td style="text-align:left">y_tp</td><td>(N+1, L)</td><td>(N+1, L, 2)</td></tr>
           <tr><td style="text-align:left">I_tp_pos</td><td>(L,)</td><td>(L, 2)</td></tr>
-          <tr><td style="text-align:left">x0</td><td>1.0</td><td>array([1.,0.])</td></tr>
+          <tr><td style="text-align:left">x0</td><td>1.0</td><td>array([1., 0.])</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <div class="card" style="margin-top:4px">
-    <div class="card-tag">Bibliotecas</div>
+    <div class="card-tag">Bibliotecas utilizadas</div>
     <div style="margin-top:10px">
       <span class="chip">numpy</span>
       <span class="chip">matplotlib</span>
       <span class="chip">matplotlib.cm</span>
-      <span class="chip" style="color:var(--ink3);border-style:dashed">scipy.integrate — validação</span>
-      <span class="chip" style="color:var(--ink3);border-style:dashed">time</span>
     </div>
     <p class="card-body" style="margin-top:12px">
-      Apenas bibliotecas padrão do ecossistema científico Python.
-      SciPy usado exclusivamente para validação independente via
-      <code style="font-family:var(--mono);font-size:.8rem;color:var(--cyan)">solve_ivp</code>.
+      Apenas bibliotecas padrão do ecossistema científico Python, NumPy e Matplotlib.
+      
     </p>
   </div>
 
-  <div class="card" style="margin-top:4px">
-    <div class="card-tag">Repositório</div>
-    <p class="card-body" style="margin-bottom:14px">Código-fonte completo disponível no GitHub.</p>
-    <a href="https://github.com/VictorMoura22/experimento-picard"
-       class="btn btn-primary" target="_blank" style="font-size:.65rem">
-      github.com/VictorMoura22/experimento-picard ↗
-    </a>
+</div>
+</div>
+
+<!-- ══════════════════════════════ CONCLUSÕES ════════════════════════ -->
+<div id="page-conclusoes" class="page">
+<div class="container">
+  <div class="sec-header">
+    <span class="sec-tag">Síntese</span>
+    <h2 class="sec-title">Conclusões</h2>
   </div>
 
+  <div class="card gold" style="margin-bottom:24px">
+    <div class="card-tag">Resultado central</div>
+    <div class="card-title">O papel de C(δ) na estruturação do método</div>
+    <p class="card-body">
+      O desempenho do método de Picard depende diretamente da estrutura algébrica do campo \(F\).
+      A constante de Lipschitz \(C(\delta)\) determina tanto o tamanho do domínio acessível quanto
+      a velocidade de convergência, via a cota \(M(\delta)(C(\delta)\varepsilon)^n/n!\).
+      Quanto mais próximo de linear for \(F\) em \(x\), mais favorável é o método.
+    </p>
+  </div>
+
+  <div class="card" style="padding:0 32px">
+    <div class="conclusion-item">
+      <div class="conclusion-n">1</div>
+      <div class="conclusion-text">
+        <h4>Trapézio sempre preferível ao retângulo</h4>
+        <p>O trapézio tem ordem \(\mathcal{O}(h^2)\) frente ao \(\mathcal{O}(h)\) do retângulo,
+        resultando num piso de erro irredutível mais baixo que não pode ser eliminado aumentando \(N\).
+        No Objetivo 2, o piso do retângulo estabiliza em \(\approx 6{,}93\times10^{-4}\)
+        enquanto o trapézio atinge \(\sim 10^{-7}\) — quatro ordens de diferença para os
+        mesmos parâmetros.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-n">2</div>
+      <div class="conclusion-text">
+        <h4>Convergência além do raio teórico para F = x²</h4>
+        <p>O Teorema 2.12 garante convergência apenas para \(\varepsilon\leq\varepsilon^*=0{,}25\),
+        mas os iterados convergem numericamente em todo \(|t|&lt;1\). Isso ocorre porque os iterados
+        coincidem com as somas parciais da série geométrica \(\sum t^k\), cujo raio de convergência
+        é \(|t|&lt;1\). Para \(|t|>1\) a divergência é verificável executando o Código 4 com
+        \(\varepsilon>1\).</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-n">3</div>
+      <div class="conclusion-text">
+        <h4>Otimização computacional — fator 2500×</h4>
+        <p>A substituição da integração direta pela acumulação incremental
+        \(I_k^+ = I_{k-1}^+ + (f_{k-1}+f_k)h/2\) reduz a complexidade de
+        \(\mathcal{O}(NL^2)\) para \(\mathcal{O}(NL)\), tornando viável trabalhar com
+        \(L=20001\) pontos. Para \(N=30\): de \(\approx3\times10^9\) para
+        \(\approx1{,}2\times10^6\) operações.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-n">4</div>
+      <div class="conclusion-text">
+        <h4>Sistema 2D intrinsecamente mais favorável</h4>
+        <p>Com \(C(\delta)=1\) constante (parte linear é isometria), o produto
+        \(C\varepsilon=1\) garante que a cota decai monotonamente desde o primeiro iterado,
+        sem o período de piora inicial do Objetivo 4 onde \(C\varepsilon\approx3{,}96\).
+        Além disso, a solução é inteira em \(\mathbb{R}\): sem limitação de domínio
+        análoga ao teto \(|t|&lt;1\).</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-n">5</div>
+      <div class="conclusion-text">
+        <h4>Equilíbrio entre N e L</h4>
+        <p>Os dois termos do erro total têm dependências opostas:
+        aumentar \(N\) reduz o erro de convergência exponencialmente via o fatorial;
+        aumentar \(L\) reduz o erro de quadratura como \(L^{-p}\).
+        O valor \(L\) mínimo efetivo para equilíbrio satisfaz
+        \(\varepsilon^2 L^{-p} \sim M(\delta^*)(C\varepsilon^*)^N/N!\).
+        Na prática, para \(N=14\) e trapézio, \(L\sim2000\) já equilibra os dois termos.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card cyan">
+      <div class="card-tag">Comparativo final</div>
+      <table class="cmp-table" style="margin-top:8px;font-size:.82rem">
+        <thead><tr><th>Aspecto</th><th>F = x²</th><th>Sistema 2D</th></tr></thead>
+        <tbody>
+          <tr><td>C(δ)</td><td style="color:var(--red)">2(1+δ), cresce</td><td style="color:var(--cyan)">1, constante</td></tr>
+          <tr><td>Cεₙᵤₘ</td><td style="color:var(--red)">≈ 3,96 &gt; 1</td><td style="color:var(--cyan)">= 1</td></tr>
+          <tr><td>Cota</td><td>Cresce antes de cair</td><td style="color:var(--cyan)">Decresce desde n=0</td></tr>
+          <tr><td>Singularidade</td><td style="color:var(--red)">t = 1 (real)</td><td style="color:var(--cyan)">Inteira em ℝ</td></tr>
+          <tr><td>Domínio</td><td>Limitado a |t| &lt; 1</td><td style="color:var(--cyan)">Qualquer compacto</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-tag">Referência</div>
+      <p class="card-body" style="margin-bottom:16px">
+        M. Viana e J. Espinar, <em>Equações Diferenciais Ordinárias</em>,
+        IMPA, Rio de Janeiro, 2025.
+      </p>
+      <div class="card-tag" style="margin-top:16px">Contato</div>
+      <p class="card-body">
+        <a href="mailto:victor.moura@ctec.ufal.br" style="color:var(--gold2)">victor.moura@ctec.ufal.br</a><br>
+        Bacharelado em Matemática · IM/UFAL · Maceió, 2026
+      </p>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -898,23 +1213,25 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
 <div id="page-relatorio" class="page">
 <div class="container">
   <div class="sec-header">
-    <span class="sec-tag">Documento</span>
+    <span class="sec-tag">Documento completo</span>
     <h2 class="sec-title">Relatório</h2>
   </div>
 
   <div class="card gold">
-    <div class="card-tag">Relatório técnico completo — 30 páginas</div>
+    <div class="card-tag">Relatório técnico — 30 páginas</div>
     <div class="card-title">Método de Picard: Implementação Computacional</div>
     <p class="card-body" style="margin-bottom:20px">
       Documentação completa do experimento §&thinsp;2.6 de Viana &amp; Espinar,
-      incluindo fundamentação teórica com demonstrações, decisões de implementação,
-      análise de complexidade algorítmica, tabelas de erro e discussão comparativa
-      entre integradores e EDOs estudadas.
+      incluindo fundamentação teórica com demonstrações dos Teoremas 2.4, 2.12 e Corolário 2.14,
+      decisões de implementação, análise de complexidade algorítmica, tabelas de erro,
+      gráficos de convergência e discussão comparativa entre integradores e EDOs estudadas.
     </p>
-    <a href="https://github.com/VictorMoura22/experimento-picard"
-       class="btn btn-primary" target="_blank">
-      Acessar no GitHub ↗
-    </a>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <a href="https://raw.githubusercontent.com/VictorMoura22/experimento-picard/main/Experimento-Picard/relatorio-picard.pdf"
+         class="btn btn-pdf" download>⬇ Download PDF</a>
+      <a href="https://github.com/VictorMoura22/experimento-picard"
+         class="btn btn-secondary" target="_blank">Ver no GitHub ↗</a>
+    </div>
   </div>
 
   <div class="card">
@@ -924,46 +1241,68 @@ y <span class="op">=</span> np.<span class="fn">zeros</span>((N<span class="op">
         <div class="step-n" style="width:34px;height:34px;font-size:.85rem">1</div>
         <div class="step-content">
           <h4 style="font-size:.95rem">Fundamentação Teórica</h4>
-          <p style="font-size:.83rem">Teorema P-L, operador de Picard, cota do erro, discretização e erro de quadratura.</p>
+          <p style="font-size:.83rem">Teoremas 2.4 (existência e unicidade), 2.12 (quantitativo), Lema 2.13 e
+          Corolário 2.14 (cota do erro), com demonstração completa. Discretização e erro de quadratura.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n" style="width:34px;height:34px;font-size:.85rem">2</div>
         <div class="step-content">
           <h4 style="font-size:.95rem">Objetivos 1–3</h4>
-          <p style="font-size:.83rem">Implementação básica, comparação trapézio/retângulo, domínio simétrico e piso irredutível.</p>
+          <p style="font-size:.83rem">Implementação básica, comparação trapézio/retângulo,
+          domínio simétrico e explicação analítica do piso irredutível do retângulo.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n" style="width:34px;height:34px;font-size:.85rem">3</div>
         <div class="step-content">
           <h4 style="font-size:.95rem">Objetivo 4 — Análise teórica e otimização</h4>
-          <p style="font-size:.83rem">M(δ), C(δ), δ*, N_max(τ), acumulação incremental O(NL²) → O(NL).</p>
+          <p style="font-size:.83rem">Cálculo analítico de M(δ), C(δ), δ*, N_max(τ).
+          Redução O(NL²) → O(NL): derivação, implementação e benchmark.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n" style="width:34px;height:34px;font-size:.85rem">4</div>
         <div class="step-content">
           <h4 style="font-size:.95rem">Objetivo 5 — Sistema 2D</h4>
-          <p style="font-size:.83rem">C(δ)=1 via norma espectral, tensor 3D, validação SciPy, comparativo global.</p>
+          <p style="font-size:.83rem">C(δ)=1 via , Modificações dimensionais, M(δ) do sistema 2D, 
+            comparativo global de N_max.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-n" style="width:34px;height:34px;font-size:.85rem">5</div>
         <div class="step-content">
           <h4 style="font-size:.95rem">Comparação e Conclusões</h4>
-          <p style="font-size:.83rem">Evolução dos algoritmos, papel de C(δ) na estruturação do método, síntese dos resultados.</p>
+          <p style="font-size:.83rem">Evolução dos algoritmos, papel de C(δ), equilíbrio entre N e L,
+          síntese dos resultados dos cinco objetivos.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:4px">
-    <div class="card-tag">Referência</div>
-    <p class="card-body">
-      M. Viana e J. Espinar, <em>Equações Diferenciais Ordinárias</em>,
-      IMPA, Rio de Janeiro, 2025.
-    </p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-tag">Figuras incluídas</div>
+      <p class="card-body" style="font-size:.83rem">
+        Iterados vs. solução exata para cada EDO · Erro pontual em escala logarítmica ·
+        Curvas ε(δ), M(δ), C(δ) com δ* · N_max(δ,τ) para seis tolerâncias ·
+        Comparação N_max analítico vs. numérico (trapézio e retângulo) ·
+        Convergência dos iterados para ε* no sistema 2D.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Referência</div>
+      <p class="card-body">
+        M. Viana e J. Espinar, <em>Equações Diferenciais Ordinárias</em>,
+        IMPA, Rio de Janeiro, 2025.
+      </p>
+      <p class="card-body" style="margin-top:10px;font-size:.83rem">
+        Compilado em LaTeX com pacotes <code style="font-family:var(--mono)">amsmath</code>,
+        <code style="font-family:var(--mono)">amsthm</code>,
+        <code style="font-family:var(--mono)">algorithm2e</code>,
+        <code style="font-family:var(--mono)">listings</code>.
+      </p>
+    </div>
   </div>
 
 </div>
